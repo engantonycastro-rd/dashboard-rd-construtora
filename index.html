@@ -972,6 +972,68 @@ function render() {
   if (barChart) barChart.destroy();
 }
 
+const JSONBIN_API_KEY = '$2a$10$mbJV10T6HQxzZ7uVai/JGOCIgsqQ3kQaO/SWS148pK3VtqBytdm0W';
+const JSONBIN_BIN_ID = '69a83af6ae596e708f5ead49';
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+
+function showToast(msg, color) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:80px;right:20px;padding:10px 20px;border-radius:3px;font-family:Bebas Neue,sans-serif;font-size:15px;letter-spacing:2px;z-index:300;transition:opacity 0.4s;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.background = color || '#222';
+  t.style.color = '#fff';
+  t.style.border = '1px solid ' + (color || '#444');
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+
+async function saveState() {
+  try {
+    showToast('⏳ SALVANDO...', '#333');
+    const res = await fetch(JSONBIN_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_API_KEY,
+        'X-Bin-Versioning': 'false'
+      },
+      body: JSON.stringify(state)
+    });
+    if (res.ok) {
+      showToast('✔ DADOS SALVOS NA NUVEM', '#1a6e3a');
+    } else {
+      showToast('✖ ERRO AO SALVAR', '#8b0000');
+    }
+  } catch(e) {
+    showToast('✖ SEM CONEXÃO', '#8b0000');
+    console.warn('Erro ao salvar:', e);
+  }
+}
+
+async function loadState() {
+  try {
+    const res = await fetch(JSONBIN_URL + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_API_KEY }
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const parsed = json.record;
+      if (parsed && parsed.monthly) {
+        while (parsed.monthly.length < 22) parsed.monthly.push(0);
+        state = parsed;
+      }
+    }
+  } catch(e) {
+    console.warn('Erro ao carregar:', e);
+  }
+}
+
 function openModal() {
   const { currentMonth, monthly, managers } = state;
   document.getElementById('inputCurrentMonth').value = currentMonth;
@@ -990,7 +1052,7 @@ function closeModal() {
   document.getElementById('modalOverlay').classList.remove('active');
 }
 
-function applyData() {
+async function applyData() {
   state.currentMonth = parseInt(document.getElementById('inputCurrentMonth').value);
   for (let i = 0; i < 22; i++) {
     const v = document.getElementById('m' + i).value;
@@ -1004,6 +1066,7 @@ function applyData() {
   }
   closeModal();
   render();
+  await saveState();
 }
 
 // ESC fecha modal
@@ -1012,10 +1075,13 @@ document.getElementById('modalOverlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeModal();
 });
 
-// Init
-clock();
-setInterval(clock, 1000);
-render();
+// Init — carrega dados da nuvem antes de renderizar
+(async () => {
+  await loadState();
+  clock();
+  setInterval(clock, 1000);
+  render();
+})();
 </script>
 </body>
 </html>
