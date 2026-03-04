@@ -52,7 +52,7 @@
   .dashboard {
     display: grid;
     grid-template-columns: 280px 1fr 300px;
-    grid-template-rows: 72px 1fr 200px;
+    grid-template-rows: 72px 1fr;
     height: calc(100vh - 3px);
     gap: 0;
     padding: 16px;
@@ -409,19 +409,7 @@
     letter-spacing: 1px;
   }
 
-  /* ─── BOTTOM CHART ─── */
-  .bottom-chart {
-    grid-column: 1 / -1;
-    grid-row: 3;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 12px 18px;
-  }
 
-  .bottom-chart canvas {
-    max-height: 130px;
-  }
 
   /* ─── MODAL DE EDIÇÃO ─── */
   .modal-overlay {
@@ -595,8 +583,15 @@
       </div>
     </div>
     <div class="header-center">
-      <div class="label">Meta Mensal</div>
-      <div class="meta-value" id="metaDisplay">R$ 6.880.901,53</div>
+      <div class="label">Meta Mensal <span id="metaBaseInfo" style="color:var(--orange);font-size:9px;letter-spacing:2px;margin-left:6px"></span></div>
+      <div class="meta-value" id="metaDisplay">—</div>
+      <div style="margin-top:6px;background:var(--border);height:3px;border-radius:2px;width:260px;overflow:hidden">
+        <div id="headerMetaBar" style="height:100%;width:0%;background:var(--orange);border-radius:2px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;width:260px;margin-top:4px">
+        <div style="font-size:9px;letter-spacing:2px;color:var(--gray);font-weight:300">MÊS ATUAL vs META</div>
+        <div id="headerMetaPct" style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--orange);letter-spacing:1px">0%</div>
+      </div>
     </div>
     <div class="header-right">
       <div class="clock" id="clock">00:00:00</div>
@@ -621,7 +616,7 @@
   <div class="center-panel">
     <div class="kpi-row">
       <div class="kpi-card highlight">
-        <div class="kpi-label">Faturamento Anual</div>
+        <div class="kpi-label">Faturamento 2026</div>
         <div class="kpi-value" id="kpiAnual">R$0</div>
         <div class="kpi-sub" id="kpiAnualSub">— meses registrados</div>
       </div>
@@ -652,10 +647,7 @@
     <div id="managersBody"></div>
   </div>
 
-  <!-- BOTTOM BAR CHART -->
-  <div class="bottom-chart">
-    <canvas id="barChart"></canvas>
-  </div>
+
 
 </div>
 
@@ -670,32 +662,43 @@
     <h2>ATUALIZAR DASHBOARD</h2>
     <div class="modal-grid">
 
-      <div class="modal-sub">META & MÊS ATUAL</div>
+      <div class="modal-sub">MÊS ATUAL</div>
       <div class="modal-divider"></div>
 
-      <div class="field-group">
-        <label>Meta Mensal (R$)</label>
-        <input type="text" id="inputMeta" placeholder="6.880.901,53">
-      </div>
-      <div class="field-group">
+      <div class="field-group full">
         <label>Mês Atual</label>
         <select id="inputCurrentMonth" style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--white);padding:10px 12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;outline:none;">
-          <option value="0">MARÇO</option>
-          <option value="1">ABRIL</option>
-          <option value="2">MAIO</option>
-          <option value="3">JUNHO</option>
-          <option value="4">JULHO</option>
-          <option value="5">AGOSTO</option>
-          <option value="6">SETEMBRO</option>
-          <option value="7">OUTUBRO</option>
-          <option value="8">NOVEMBRO</option>
-          <option value="9">DEZEMBRO</option>
-          <option value="10">JANEIRO</option>
-          <option value="11" selected>FEVEREIRO</option>
+          <optgroup label="── 2025 ──" style="color:var(--orange)">
+            <option value="0">MARÇO / 2025</option>
+            <option value="1">ABRIL / 2025</option>
+            <option value="2">MAIO / 2025</option>
+            <option value="3">JUNHO / 2025</option>
+            <option value="4">JULHO / 2025</option>
+            <option value="5">AGOSTO / 2025</option>
+            <option value="6">SETEMBRO / 2025</option>
+            <option value="7">OUTUBRO / 2025</option>
+            <option value="8">NOVEMBRO / 2025</option>
+            <option value="9">DEZEMBRO / 2025</option>
+          </optgroup>
+          <optgroup label="── 2026 ──" style="color:#00c853">
+            <option value="10">JANEIRO / 2026</option>
+            <option value="11" selected>FEVEREIRO / 2026</option>
+            <option value="12">MARÇO / 2026</option>
+            <option value="13">ABRIL / 2026</option>
+            <option value="14">MAIO / 2026</option>
+            <option value="15">JUNHO / 2026</option>
+            <option value="16">JULHO / 2026</option>
+            <option value="17">AGOSTO / 2026</option>
+            <option value="18">SETEMBRO / 2026</option>
+            <option value="19">OUTUBRO / 2026</option>
+            <option value="20">NOVEMBRO / 2026</option>
+            <option value="21">DEZEMBRO / 2026</option>
+          </optgroup>
         </select>
+        <div style="font-size:10px;color:var(--gray);letter-spacing:1px;margin-top:4px;font-weight:300">⚡ A meta é calculada automaticamente: média dos 3 meses anteriores</div>
       </div>
 
-      <div class="modal-sub" style="margin-top:8px">FATURAMENTO MENSAL</div>
+      <div class="modal-sub" style="margin-top:8px">FATURAMENTO 2025</div>
       <div class="modal-divider"></div>
 
       <div class="field-group"><label>Março</label><input type="text" id="m0" placeholder="5.246.639,33"></div>
@@ -708,8 +711,22 @@
       <div class="field-group"><label>Outubro</label><input type="text" id="m7" placeholder="9.085.111,88"></div>
       <div class="field-group"><label>Novembro</label><input type="text" id="m8" placeholder="7.833.265,11"></div>
       <div class="field-group"><label>Dezembro</label><input type="text" id="m9" placeholder="10.981.771,91"></div>
+
+      <div class="modal-sub" style="margin-top:8px">FATURAMENTO 2026</div>
+      <div class="modal-divider"></div>
+
       <div class="field-group"><label>Janeiro</label><input type="text" id="m10" placeholder="1.739.301,80"></div>
       <div class="field-group"><label>Fevereiro</label><input type="text" id="m11" placeholder="5.944.839,43"></div>
+      <div class="field-group"><label>Março</label><input type="text" id="m12" placeholder="0,00"></div>
+      <div class="field-group"><label>Abril</label><input type="text" id="m13" placeholder="0,00"></div>
+      <div class="field-group"><label>Maio</label><input type="text" id="m14" placeholder="0,00"></div>
+      <div class="field-group"><label>Junho</label><input type="text" id="m15" placeholder="0,00"></div>
+      <div class="field-group"><label>Julho</label><input type="text" id="m16" placeholder="0,00"></div>
+      <div class="field-group"><label>Agosto</label><input type="text" id="m17" placeholder="0,00"></div>
+      <div class="field-group"><label>Setembro</label><input type="text" id="m18" placeholder="0,00"></div>
+      <div class="field-group"><label>Outubro</label><input type="text" id="m19" placeholder="0,00"></div>
+      <div class="field-group"><label>Novembro</label><input type="text" id="m20" placeholder="0,00"></div>
+      <div class="field-group"><label>Dezembro</label><input type="text" id="m21" placeholder="0,00"></div>
 
       <div class="modal-sub" style="margin-top:8px">GESTORES</div>
       <div class="modal-divider"></div>
@@ -733,13 +750,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 
-const MONTHS = ['MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO','JANEIRO','FEVEREIRO'];
+// índices 0-9  → 2025: MAR ABR MAI JUN JUL AGO SET OUT NOV DEZ
+// índices 10-19 → 2026: JAN FEV MAR ABR MAI JUN JUL AGO SET OUT NOV DEZ
+// (total 22 posições)
+const MONTHS_2025 = ['MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+const MONTHS_2026 = ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+const MONTHS = [...MONTHS_2025, ...MONTHS_2026]; // 22 itens
+const YEAR_OF = (i) => i < 10 ? '2025' : '2026';
 const COLORS_MANAGER = ['#FF6B00','#ffffff','#888888','#444444'];
 
 let state = {
-  meta: 6880901.528,
-  currentMonth: 11,
-  monthly: [5246639.33, 4346796.62, 4140488.44, 4267125.57, 5768418.88, 4872654.48, 6757616.26, 9085111.88, 7833265.11, 10981771.91, 1739301.80, 5944839.43],
+  currentMonth: 11, // índice 11 = FEV/2026
+  monthly: [
+    // 2025: MAR→DEZ
+    5246639.33, 4346796.62, 4140488.44, 4267125.57, 5768418.88,
+    4872654.48, 6757616.26, 9085111.88, 7833265.11, 10981771.91,
+    // 2026: JAN→DEZ (12 meses)
+    1739301.80, 5944839.43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  ],
   managers: [
     { name: 'LUIS', value: 1652618.97 },
     { name: 'FELIPE', value: 1009322.16 },
@@ -749,6 +777,7 @@ let state = {
 };
 
 let lineChart, barChart;
+let collapsed2025 = false;
 
 function fmt(v) {
   return 'R$\u00A0' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -774,33 +803,79 @@ function clock() {
 }
 
 function render() {
-  const { meta, currentMonth, monthly, managers } = state;
+  const { currentMonth, monthly, managers } = state;
 
-  // META
-  document.getElementById('metaDisplay').textContent = fmt(meta);
+  // CALCULA META: média dos 3 últimos meses com valor > 0 antes do mês atual
+  const filled = monthly.map((v, i) => ({ v, i })).filter(x => x.v > 0 && x.i !== currentMonth);
+  const last3 = filled.slice(-3);
+  const meta = last3.length > 0 ? last3.reduce((a, x) => a + x.v, 0) / last3.length : 0;
+  const metaMeses = last3.map(x => MONTHS[x.i].substring(0,3)).join(', ');
 
   // TABELA
   const tbody = document.getElementById('monthlyBody');
   tbody.innerHTML = '';
-  monthly.forEach((v, i) => {
+
+  // Bloco 2025 — recolhível
+  const trYear2025 = document.createElement('tr');
+  trYear2025.style.cursor = 'pointer';
+  trYear2025.innerHTML = `<td colspan="2" style="padding:5px 14px 3px;font-size:9px;letter-spacing:4px;color:var(--orange);font-weight:400;background:rgba(255,107,0,0.06);border-bottom:1px solid rgba(255,107,0,0.2);user-select:none;">
+    <span style="margin-right:6px;display:inline-block;transition:transform 0.3s;transform:rotate(${collapsed2025 ? '-90deg' : '0deg'})">▾</span>2025
+    <span style="font-size:8px;color:#555;margin-left:6px">${collapsed2025 ? 'clique para expandir' : 'clique para recolher'}</span>
+  </td>`;
+  trYear2025.addEventListener('click', () => {
+    collapsed2025 = !collapsed2025;
+    render();
+  });
+  tbody.appendChild(trYear2025);
+
+  if (!collapsed2025) {
+    for (let i = 0; i <= 9; i++) {
+      const v = monthly[i];
+      const tr = document.createElement('tr');
+      if (i === currentMonth) tr.classList.add('current-month');
+      tr.innerHTML = `<td>${MONTHS[i]}</td><td>${v > 0 ? fmt(v) : '—'}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  // Bloco 2026 (JAN a DEZ, índices 10-21)
+  const trYear2026 = document.createElement('tr');
+  trYear2026.innerHTML = `<td colspan="2" style="padding:5px 14px 3px;font-size:9px;letter-spacing:4px;color:#00c853;font-weight:400;background:rgba(0,200,83,0.06);border-bottom:1px solid rgba(0,200,83,0.2);border-top:1px solid var(--border)">▾ 2026</td>`;
+  tbody.appendChild(trYear2026);
+  for (let i = 10; i <= 21; i++) {
+    const v = monthly[i];
     const tr = document.createElement('tr');
     if (i === currentMonth) tr.classList.add('current-month');
-    tr.innerHTML = `<td>${MONTHS[i]}</td><td>${v > 0 ? fmt(v) : '—'}</td>`;
+    tr.innerHTML = `<td>${MONTHS[i]}</td><td style="${v > 0 ? '' : 'color:#444'}">${v > 0 ? fmt(v) : '—'}</td>`;
     tbody.appendChild(tr);
-  });
+  }
 
-  // KPI ANUAL
-  const anual = monthly.reduce((a,b) => a+b, 0);
-  const filled = monthly.filter(v => v > 0).length;
-  document.getElementById('kpiAnual').textContent = fmt(anual);
-  document.getElementById('kpiAnualSub').textContent = filled + ' meses registrados';
+  // KPI ANUAL — soma todos os meses de 2026 com valor (índices 10-21)
+  const anual2026 = monthly.slice(10).reduce((a,b) => a + (b||0), 0);
+  const filled2026 = monthly.slice(10).filter(v => v > 0).length;
+  document.getElementById('kpiAnual').textContent = fmt(anual2026);
+  document.getElementById('kpiAnualSub').textContent = '2026 · ' + filled2026 + ' mês' + (filled2026 !== 1 ? 'es' : '') + ' registrado' + (filled2026 !== 1 ? 's' : '');
+
+  // HEADER META
+  document.getElementById('metaDisplay').textContent = fmt(meta);
+  document.getElementById('metaBaseInfo').textContent = 'média: ' + metaMeses;
 
   // KPI MENSAL
   const mensal = monthly[currentMonth] || 0;
   document.getElementById('kpiMensal').textContent = fmt(mensal);
   const pct = meta > 0 ? (mensal / meta * 100) : 0;
-  const bar = document.getElementById('metaBar');
   const pctCapped = Math.min(pct, 100);
+
+  // barra do header
+  const hBar = document.getElementById('headerMetaBar');
+  const hPct = document.getElementById('headerMetaPct');
+  setTimeout(() => { hBar.style.width = pctCapped + '%'; }, 100);
+  hBar.style.background = pct >= 100 ? 'var(--green)' : 'var(--orange)';
+  hPct.textContent = pct.toFixed(1) + '%';
+  hPct.style.color = pct >= 100 ? 'var(--green)' : 'var(--orange)';
+
+  // barra do card
+  const bar = document.getElementById('metaBar');
   setTimeout(() => { bar.style.width = pctCapped + '%'; }, 100);
   if (pct >= 100) { bar.classList.add('over'); } else { bar.classList.remove('over'); }
   document.getElementById('metaSub').textContent = pct.toFixed(1) + '% da meta atingida';
@@ -838,11 +913,23 @@ function render() {
     });
   }, 200);
 
-  // CHARTS
-  const labels = MONTHS.map((m, i) => monthly[i] > 0 ? m.substring(0,3) : m.substring(0,3));
-  const data = monthly.map(v => v > 0 ? v : null);
-  const bgColors = monthly.map((v, i) => i === currentMonth ? '#FF6B00' : 'rgba(255,255,255,0.08)');
-  const borderColors = monthly.map((v, i) => i === currentMonth ? '#FF6B00' : 'rgba(255,255,255,0.2)');
+  // CHARTS — apenas meses com valor cadastrado
+  const chartEntries = monthly
+    .map((v, i) => ({ v, i }))
+    .filter(x => x.v > 0);
+
+  const labels = chartEntries.map(x => MONTHS[x.i].substring(0,3) + '/' + YEAR_OF(x.i).slice(2));
+  const data   = chartEntries.map(x => x.v);
+  const bgColors = chartEntries.map(x =>
+    x.i === currentMonth ? '#FF6B00' :
+    x.i >= 10 ? 'rgba(0,200,83,0.45)' :
+    'rgba(255,255,255,0.10)'
+  );
+  const borderColors = chartEntries.map(x =>
+    x.i === currentMonth ? '#FF6B00' :
+    x.i >= 10 ? '#00c853' :
+    'rgba(255,255,255,0.22)'
+  );
 
   const chartDefaults = {
     plugins: { legend: { display: false }, tooltip: {
@@ -862,36 +949,10 @@ function render() {
     }
   };
 
-  // LINE CHART
+  // LINE CHART → now slim bar chart
   if (lineChart) lineChart.destroy();
   const lCtx = document.getElementById('lineChart').getContext('2d');
-  const gradient = lCtx.createLinearGradient(0, 0, 0, 200);
-  gradient.addColorStop(0, 'rgba(255,107,0,0.3)');
-  gradient.addColorStop(1, 'rgba(255,107,0,0)');
   lineChart = new Chart(lCtx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        borderColor: '#FF6B00',
-        backgroundColor: gradient,
-        borderWidth: 2,
-        pointRadius: (ctx) => ctx.dataIndex === currentMonth ? 6 : 3,
-        pointBackgroundColor: (ctx) => ctx.dataIndex === currentMonth ? '#FF6B00' : '#333',
-        pointBorderColor: '#FF6B00',
-        tension: 0.4,
-        fill: true,
-        spanGaps: false
-      }]
-    },
-    options: { ...chartDefaults, responsive: true, maintainAspectRatio: true }
-  });
-
-  // BAR CHART
-  if (barChart) barChart.destroy();
-  const bCtx = document.getElementById('barChart').getContext('2d');
-  barChart = new Chart(bCtx, {
     type: 'bar',
     data: {
       labels,
@@ -900,16 +961,19 @@ function render() {
         backgroundColor: bgColors,
         borderColor: borderColors,
         borderWidth: 1,
-        borderRadius: 2,
+        borderRadius: 3,
+        barPercentage: 0.35,
+        categoryPercentage: 0.7,
       }]
     },
-    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: true }
   });
+
+  if (barChart) barChart.destroy();
 }
 
 function openModal() {
-  const { meta, currentMonth, monthly, managers } = state;
-  document.getElementById('inputMeta').value = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const { currentMonth, monthly, managers } = state;
   document.getElementById('inputCurrentMonth').value = currentMonth;
   monthly.forEach((v, i) => {
     const el = document.getElementById('m' + i);
@@ -927,9 +991,8 @@ function closeModal() {
 }
 
 function applyData() {
-  state.meta = parseInput(document.getElementById('inputMeta').value) || state.meta;
   state.currentMonth = parseInt(document.getElementById('inputCurrentMonth').value);
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 22; i++) {
     const v = document.getElementById('m' + i).value;
     state.monthly[i] = v ? parseInput(v) : 0;
   }
