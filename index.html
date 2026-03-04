@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard RD Construtora</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #111111;
+    --surface: #1a1a1a;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --orange: #FF6B00;
+    --orange-dim: #cc5500;
+    --white: #ffffff;
+    --gray: #888888;
+    --gray-light: #bbbbbb;
+    --green: #00c853;
+    --red: #ff3b30;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Barlow Condensed', sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* GRAIN OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.5;
+  }
+
+  /* TOP ACCENT LINE */
+  .top-bar {
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--orange), var(--orange), transparent);
+    width: 100%;
+  }
+
+  .dashboard {
+    display: grid;
+    grid-template-columns: 280px 1fr 300px;
+    grid-template-rows: 72px 1fr 200px;
+    height: calc(100vh - 3px);
+    gap: 0;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: -1px;
+    clip-path: polygon(0 0, 100% 0, 100% 75%, 85% 100%, 0 100%);
+  }
+
+  .logo-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--white);
+  }
+
+  .logo-text span {
+    color: var(--orange);
+  }
+
+  .header-center {
+    text-align: center;
+  }
+
+  .header-center .label {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--gray);
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  .header-center .meta-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--orange);
+  }
+
+  .header-right {
+    text-align: right;
+  }
+
+  .clock {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 3px;
+    color: var(--white);
+  }
+
+  .date-display {
+    font-size: 12px;
+    color: var(--gray);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  /* ─── TABELA MENSAL ─── */
+  .monthly-table {
+    grid-column: 1;
+    grid-row: 2;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 4px;
+    color: var(--gray);
+    padding: 10px 14px 8px;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+  }
+
+  .table-scroll {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .table-scroll::-webkit-scrollbar { width: 3px; }
+  .table-scroll::-webkit-scrollbar-track { background: transparent; }
+  .table-scroll::-webkit-scrollbar-thumb { background: var(--border); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gray);
+    text-align: left;
+    padding: 6px 14px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+    text-transform: uppercase;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #1e1e1e;
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+
+  tbody tr:hover { background: #222; }
+
+  tbody tr.current-month {
+    background: rgba(255, 107, 0, 0.08);
+    border-left: 2px solid var(--orange);
+  }
+
+  tbody tr.current-month td { color: var(--orange); }
+
+  tbody td {
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-light);
+  }
+
+  tbody td:first-child {
+    font-weight: 300;
+    color: var(--gray);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  tbody td:last-child { text-align: right; }
+
+  /* ─── CENTRO ─── */
+  .center-panel {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--orange);
+  }
+
+  .kpi-card.highlight {
+    background: linear-gradient(135deg, rgba(255,107,0,0.12), rgba(255,107,0,0.04));
+    border-color: rgba(255,107,0,0.3);
+  }
+
+  .kpi-label {
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--gray);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 300;
+  }
+
+  .kpi-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 1px;
+    line-height: 1;
+    color: var(--white);
+  }
+
+  .kpi-card.highlight .kpi-value {
+    color: var(--orange);
+  }
+
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--gray);
+    margin-top: 6px;
+    letter-spacing: 1px;
+    font-weight: 300;
+  }
+
+  .progress-wrap {
+    margin-top: 10px;
+    background: var(--border);
+    height: 3px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--orange);
+    border-radius: 2px;
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+
+  .progress-bar.over {
+    background: var(--green);
+  }
+
+  .meta-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+
+  .meta-pct {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--orange);
+  }
+
+  .meta-pct.over { color: var(--green); }
+
+  /* ─── CHART AREA ─── */
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 18px;
+    flex: 1;
+  }
+
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  #myChart { width: 100% !important; }
+
+  /* ─── GESTORES ─── */
+  .managers-panel {
+    grid-column: 3;
+    grid-row: 2;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .manager-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+
+  .manager-item:hover { background: #222; }
+
+  .manager-item:last-child { border-bottom: none; }
+
+  .manager-rank {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--border);
+    width: 24px;
+    flex-shrink: 0;
+  }
+
+  .manager-info { flex: 1; }
+
+  .manager-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+
+  .manager-bar-wrap {
+    background: var(--border);
+    height: 2px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+
+  .manager-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .manager-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    color: var(--white);
+    text-align: right;
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+
+  .manager-pct {
+    font-size: 10px;
+    color: var(--gray);
+    text-align: right;
+    letter-spacing: 1px;
+  }
+
+  /* ─── BOTTOM CHART ─── */
+  .bottom-chart {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 18px;
+  }
+
+  .bottom-chart canvas {
+    max-height: 130px;
+  }
+
+  /* ─── MODAL DE EDIÇÃO ─── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--orange);
+    border-radius: 4px;
+    padding: 32px;
+    width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 4px;
+    color: var(--orange);
+    margin-bottom: 24px;
+  }
+
+  .modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-group.full { grid-column: 1 / -1; }
+
+  .field-group label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gray);
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  .field-group input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--white);
+    padding: 10px 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field-group input:focus { border-color: var(--orange); }
+
+  .modal-divider {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: var(--border);
+    margin: 8px 0;
+  }
+
+  .modal-sub {
+    grid-column: 1 / -1;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gray);
+    text-transform: uppercase;
+    font-weight: 300;
+    margin-top: 4px;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+    justify-content: flex-end;
+  }
+
+  .btn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 3px;
+    padding: 10px 28px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--orange);
+    color: var(--white);
+  }
+
+  .btn-primary:hover { background: #e05e00; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--gray);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { color: var(--white); border-color: var(--gray); }
+
+  /* EDIT BUTTON */
+  .edit-fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--orange);
+    color: var(--white);
+    border: none;
+    border-radius: 3px;
+    padding: 12px 24px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    z-index: 150;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(255,107,0,0.3);
+  }
+
+  .edit-fab:hover {
+    background: #e05e00;
+    transform: translateY(-2px);
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .monthly-table, .center-panel, .managers-panel, .bottom-chart, .header {
+    animation: fadeIn 0.6s ease both;
+  }
+
+  .center-panel { animation-delay: 0.1s; }
+  .managers-panel { animation-delay: 0.2s; }
+  .bottom-chart { animation-delay: 0.3s; }
+</style>
+</head>
+<body>
+
+<div class="top-bar"></div>
+
+<div class="dashboard">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-area">
+      <div class="logo-icon">RD</div>
+      <div>
+        <div class="logo-text">RD <span>CONSTRUTORA</span></div>
+        <div style="font-size:10px;letter-spacing:3px;color:var(--gray);font-weight:300">DASHBOARD DE FATURAMENTO</div>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="label">Meta Mensal</div>
+      <div class="meta-value" id="metaDisplay">R$ 6.880.901,53</div>
+    </div>
+    <div class="header-right">
+      <div class="clock" id="clock">00:00:00</div>
+      <div class="date-display" id="dateDisplay">—</div>
+    </div>
+  </div>
+
+  <!-- TABELA MENSAL -->
+  <div class="monthly-table">
+    <div class="section-title">Resumo Anual</div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Mês</th><th style="text-align:right">Faturamento</th></tr>
+        </thead>
+        <tbody id="monthlyBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CENTRO -->
+  <div class="center-panel">
+    <div class="kpi-row">
+      <div class="kpi-card highlight">
+        <div class="kpi-label">Faturamento Anual</div>
+        <div class="kpi-value" id="kpiAnual">R$0</div>
+        <div class="kpi-sub" id="kpiAnualSub">— meses registrados</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Faturamento Mensal</div>
+        <div class="kpi-value" id="kpiMensal">R$0</div>
+        <div class="progress-wrap">
+          <div class="progress-bar" id="metaBar" style="width:0%"></div>
+        </div>
+        <div class="meta-info">
+          <div class="kpi-sub" id="metaSub">— da meta</div>
+          <div class="meta-pct" id="metaPct">0%</div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="section-title" style="padding:0;border:none">Evolução Mensal</div>
+        <div style="font-size:10px;letter-spacing:3px;color:var(--gray);font-weight:300">FATURAMENTO R$</div>
+      </div>
+      <canvas id="lineChart" height="120"></canvas>
+    </div>
+  </div>
+
+  <!-- GESTORES -->
+  <div class="managers-panel">
+    <div class="section-title">Resumo Gestores</div>
+    <div id="managersBody"></div>
+  </div>
+
+  <!-- BOTTOM BAR CHART -->
+  <div class="bottom-chart">
+    <canvas id="barChart"></canvas>
+  </div>
+
+</div>
+
+<!-- EDIT FAB -->
+<button class="edit-fab" onclick="openModal()">
+  ✏ ATUALIZAR DADOS
+</button>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>ATUALIZAR DASHBOARD</h2>
+    <div class="modal-grid">
+
+      <div class="modal-sub">META & MÊS ATUAL</div>
+      <div class="modal-divider"></div>
+
+      <div class="field-group">
+        <label>Meta Mensal (R$)</label>
+        <input type="text" id="inputMeta" placeholder="6.880.901,53">
+      </div>
+      <div class="field-group">
+        <label>Mês Atual</label>
+        <select id="inputCurrentMonth" style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--white);padding:10px 12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;outline:none;">
+          <option value="0">MARÇO</option>
+          <option value="1">ABRIL</option>
+          <option value="2">MAIO</option>
+          <option value="3">JUNHO</option>
+          <option value="4">JULHO</option>
+          <option value="5">AGOSTO</option>
+          <option value="6">SETEMBRO</option>
+          <option value="7">OUTUBRO</option>
+          <option value="8">NOVEMBRO</option>
+          <option value="9">DEZEMBRO</option>
+          <option value="10">JANEIRO</option>
+          <option value="11" selected>FEVEREIRO</option>
+        </select>
+      </div>
+
+      <div class="modal-sub" style="margin-top:8px">FATURAMENTO MENSAL</div>
+      <div class="modal-divider"></div>
+
+      <div class="field-group"><label>Março</label><input type="text" id="m0" placeholder="5.246.639,33"></div>
+      <div class="field-group"><label>Abril</label><input type="text" id="m1" placeholder="4.346.796,62"></div>
+      <div class="field-group"><label>Maio</label><input type="text" id="m2" placeholder="4.140.488,44"></div>
+      <div class="field-group"><label>Junho</label><input type="text" id="m3" placeholder="4.267.125,57"></div>
+      <div class="field-group"><label>Julho</label><input type="text" id="m4" placeholder="5.768.418,88"></div>
+      <div class="field-group"><label>Agosto</label><input type="text" id="m5" placeholder="4.872.654,48"></div>
+      <div class="field-group"><label>Setembro</label><input type="text" id="m6" placeholder="6.757.616,26"></div>
+      <div class="field-group"><label>Outubro</label><input type="text" id="m7" placeholder="9.085.111,88"></div>
+      <div class="field-group"><label>Novembro</label><input type="text" id="m8" placeholder="7.833.265,11"></div>
+      <div class="field-group"><label>Dezembro</label><input type="text" id="m9" placeholder="10.981.771,91"></div>
+      <div class="field-group"><label>Janeiro</label><input type="text" id="m10" placeholder="1.739.301,80"></div>
+      <div class="field-group"><label>Fevereiro</label><input type="text" id="m11" placeholder="5.944.839,43"></div>
+
+      <div class="modal-sub" style="margin-top:8px">GESTORES</div>
+      <div class="modal-divider"></div>
+
+      <div class="field-group"><label>Nome Gestor 1</label><input type="text" id="g0name" placeholder="LUIS"></div>
+      <div class="field-group"><label>Valor Gestor 1</label><input type="text" id="g0val" placeholder="1.652.618,97"></div>
+      <div class="field-group"><label>Nome Gestor 2</label><input type="text" id="g1name" placeholder="FELIPE"></div>
+      <div class="field-group"><label>Valor Gestor 2</label><input type="text" id="g1val" placeholder="1.009.322,16"></div>
+      <div class="field-group"><label>Nome Gestor 3</label><input type="text" id="g2name" placeholder="LUCAS"></div>
+      <div class="field-group"><label>Valor Gestor 3</label><input type="text" id="g2val" placeholder="708.315,51"></div>
+      <div class="field-group"><label>Nome Gestor 4</label><input type="text" id="g3name" placeholder="LANARA"></div>
+      <div class="field-group"><label>Valor Gestor 4</label><input type="text" id="g3val" placeholder="102.160,70"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button>
+      <button class="btn btn-primary" onclick="applyData()">APLICAR</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+
+const MONTHS = ['MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO','JANEIRO','FEVEREIRO'];
+const COLORS_MANAGER = ['#FF6B00','#ffffff','#888888','#444444'];
+
+let state = {
+  meta: 6880901.528,
+  currentMonth: 11,
+  monthly: [5246639.33, 4346796.62, 4140488.44, 4267125.57, 5768418.88, 4872654.48, 6757616.26, 9085111.88, 7833265.11, 10981771.91, 1739301.80, 5944839.43],
+  managers: [
+    { name: 'LUIS', value: 1652618.97 },
+    { name: 'FELIPE', value: 1009322.16 },
+    { name: 'LUCAS', value: 708315.51 },
+    { name: 'LANARA', value: 102160.70 },
+  ]
+};
+
+let lineChart, barChart;
+
+function fmt(v) {
+  return 'R$\u00A0' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function parseInput(s) {
+  if (!s) return 0;
+  return parseFloat(s.replace(/\./g,'').replace(',','.')) || 0;
+}
+
+function clock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    String(now.getHours()).padStart(2,'0') + ':' +
+    String(now.getMinutes()).padStart(2,'0') + ':' +
+    String(now.getSeconds()).padStart(2,'0');
+  const days = ['DOMINGO','SEGUNDA','TERÇA','QUARTA','QUINTA','SEXTA','SÁBADO'];
+  document.getElementById('dateDisplay').textContent =
+    days[now.getDay()] + ', ' +
+    String(now.getDate()).padStart(2,'0') + '/' +
+    String(now.getMonth()+1).padStart(2,'0') + '/' +
+    now.getFullYear();
+}
+
+function render() {
+  const { meta, currentMonth, monthly, managers } = state;
+
+  // META
+  document.getElementById('metaDisplay').textContent = fmt(meta);
+
+  // TABELA
+  const tbody = document.getElementById('monthlyBody');
+  tbody.innerHTML = '';
+  monthly.forEach((v, i) => {
+    const tr = document.createElement('tr');
+    if (i === currentMonth) tr.classList.add('current-month');
+    tr.innerHTML = `<td>${MONTHS[i]}</td><td>${v > 0 ? fmt(v) : '—'}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // KPI ANUAL
+  const anual = monthly.reduce((a,b) => a+b, 0);
+  const filled = monthly.filter(v => v > 0).length;
+  document.getElementById('kpiAnual').textContent = fmt(anual);
+  document.getElementById('kpiAnualSub').textContent = filled + ' meses registrados';
+
+  // KPI MENSAL
+  const mensal = monthly[currentMonth] || 0;
+  document.getElementById('kpiMensal').textContent = fmt(mensal);
+  const pct = meta > 0 ? (mensal / meta * 100) : 0;
+  const bar = document.getElementById('metaBar');
+  const pctCapped = Math.min(pct, 100);
+  setTimeout(() => { bar.style.width = pctCapped + '%'; }, 100);
+  if (pct >= 100) { bar.classList.add('over'); } else { bar.classList.remove('over'); }
+  document.getElementById('metaSub').textContent = pct.toFixed(1) + '% da meta atingida';
+  const pctEl = document.getElementById('metaPct');
+  pctEl.textContent = pct.toFixed(1) + '%';
+  pctEl.className = 'meta-pct' + (pct >= 100 ? ' over' : '');
+
+  // GESTORES
+  const maxG = Math.max(...managers.map(g => g.value));
+  const totalG = managers.reduce((a,b) => a + b.value, 0);
+  const mgBody = document.getElementById('managersBody');
+  mgBody.innerHTML = '';
+  managers.forEach((g, i) => {
+    const pctG = maxG > 0 ? (g.value / maxG * 100) : 0;
+    const pctTotal = totalG > 0 ? (g.value / totalG * 100).toFixed(1) : 0;
+    const div = document.createElement('div');
+    div.className = 'manager-item';
+    div.innerHTML = `
+      <div class="manager-rank">${i+1}</div>
+      <div class="manager-info">
+        <div class="manager-name" style="color:${COLORS_MANAGER[i]}">${g.name}</div>
+        <div class="manager-bar-wrap">
+          <div class="manager-bar" data-width="${pctG}" style="width:0%;background:${COLORS_MANAGER[i]}"></div>
+        </div>
+      </div>
+      <div>
+        <div class="manager-value">${fmt(g.value)}</div>
+        <div class="manager-pct">${pctTotal}% do total</div>
+      </div>`;
+    mgBody.appendChild(div);
+  });
+  setTimeout(() => {
+    document.querySelectorAll('.manager-bar').forEach(b => {
+      b.style.width = b.dataset.width + '%';
+    });
+  }, 200);
+
+  // CHARTS
+  const labels = MONTHS.map((m, i) => monthly[i] > 0 ? m.substring(0,3) : m.substring(0,3));
+  const data = monthly.map(v => v > 0 ? v : null);
+  const bgColors = monthly.map((v, i) => i === currentMonth ? '#FF6B00' : 'rgba(255,255,255,0.08)');
+  const borderColors = monthly.map((v, i) => i === currentMonth ? '#FF6B00' : 'rgba(255,255,255,0.2)');
+
+  const chartDefaults = {
+    plugins: { legend: { display: false }, tooltip: {
+      backgroundColor: '#1a1a1a',
+      borderColor: '#2e2e2e',
+      borderWidth: 1,
+      titleColor: '#888',
+      bodyColor: '#fff',
+      titleFont: { family: 'Barlow Condensed', size: 11 },
+      bodyFont: { family: 'Bebas Neue', size: 18 },
+      callbacks: { label: ctx => fmt(ctx.raw || 0) }
+    }},
+    scales: {
+      x: { grid: { color: '#1e1e1e' }, ticks: { color: '#666', font: { family: 'Barlow Condensed', size: 10 } } },
+      y: { grid: { color: '#1e1e1e' }, ticks: { color: '#666', font: { family: 'Barlow Condensed', size: 10 },
+        callback: v => 'R$' + (v/1000000).toFixed(1) + 'M' } }
+    }
+  };
+
+  // LINE CHART
+  if (lineChart) lineChart.destroy();
+  const lCtx = document.getElementById('lineChart').getContext('2d');
+  const gradient = lCtx.createLinearGradient(0, 0, 0, 200);
+  gradient.addColorStop(0, 'rgba(255,107,0,0.3)');
+  gradient.addColorStop(1, 'rgba(255,107,0,0)');
+  lineChart = new Chart(lCtx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: '#FF6B00',
+        backgroundColor: gradient,
+        borderWidth: 2,
+        pointRadius: (ctx) => ctx.dataIndex === currentMonth ? 6 : 3,
+        pointBackgroundColor: (ctx) => ctx.dataIndex === currentMonth ? '#FF6B00' : '#333',
+        pointBorderColor: '#FF6B00',
+        tension: 0.4,
+        fill: true,
+        spanGaps: false
+      }]
+    },
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: true }
+  });
+
+  // BAR CHART
+  if (barChart) barChart.destroy();
+  const bCtx = document.getElementById('barChart').getContext('2d');
+  barChart = new Chart(bCtx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: bgColors,
+        borderColor: borderColors,
+        borderWidth: 1,
+        borderRadius: 2,
+      }]
+    },
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+  });
+}
+
+function openModal() {
+  const { meta, currentMonth, monthly, managers } = state;
+  document.getElementById('inputMeta').value = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('inputCurrentMonth').value = currentMonth;
+  monthly.forEach((v, i) => {
+    const el = document.getElementById('m' + i);
+    if (el) el.value = v > 0 ? v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+  });
+  managers.forEach((g, i) => {
+    document.getElementById('g' + i + 'name').value = g.name;
+    document.getElementById('g' + i + 'val').value = g.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  });
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+function applyData() {
+  state.meta = parseInput(document.getElementById('inputMeta').value) || state.meta;
+  state.currentMonth = parseInt(document.getElementById('inputCurrentMonth').value);
+  for (let i = 0; i < 12; i++) {
+    const v = document.getElementById('m' + i).value;
+    state.monthly[i] = v ? parseInput(v) : 0;
+  }
+  for (let i = 0; i < 4; i++) {
+    const name = document.getElementById('g' + i + 'name').value;
+    const val = document.getElementById('g' + i + 'val').value;
+    if (name) state.managers[i].name = name.toUpperCase();
+    if (val) state.managers[i].value = parseInput(val);
+  }
+  closeModal();
+  render();
+}
+
+// ESC fecha modal
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// Init
+clock();
+setInterval(clock, 1000);
+render();
+</script>
+</body>
+</html>
