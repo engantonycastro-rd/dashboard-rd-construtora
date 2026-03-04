@@ -52,7 +52,7 @@
   .dashboard {
     display: grid;
     grid-template-columns: 280px 1fr 300px;
-    grid-template-rows: 72px 1fr 200px;
+    grid-template-rows: 72px 1fr;
     height: calc(100vh - 3px);
     gap: 0;
     padding: 16px;
@@ -409,19 +409,7 @@
     letter-spacing: 1px;
   }
 
-  /* ─── BOTTOM CHART ─── */
-  .bottom-chart {
-    grid-column: 1 / -1;
-    grid-row: 3;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 12px 18px;
-  }
 
-  .bottom-chart canvas {
-    max-height: 130px;
-  }
 
   /* ─── MODAL DE EDIÇÃO ─── */
   .modal-overlay {
@@ -595,8 +583,15 @@
       </div>
     </div>
     <div class="header-center">
-      <div class="label">Meta Mensal</div>
-      <div class="meta-value" id="metaDisplay">R$ 6.880.901,53</div>
+      <div class="label">Meta Mensal <span id="metaBaseInfo" style="color:var(--orange);font-size:9px;letter-spacing:2px;margin-left:6px"></span></div>
+      <div class="meta-value" id="metaDisplay">—</div>
+      <div style="margin-top:6px;background:var(--border);height:3px;border-radius:2px;width:260px;overflow:hidden">
+        <div id="headerMetaBar" style="height:100%;width:0%;background:var(--orange);border-radius:2px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;width:260px;margin-top:4px">
+        <div style="font-size:9px;letter-spacing:2px;color:var(--gray);font-weight:300">MÊS ATUAL vs META</div>
+        <div id="headerMetaPct" style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--orange);letter-spacing:1px">0%</div>
+      </div>
     </div>
     <div class="header-right">
       <div class="clock" id="clock">00:00:00</div>
@@ -621,7 +616,7 @@
   <div class="center-panel">
     <div class="kpi-row">
       <div class="kpi-card highlight">
-        <div class="kpi-label">Faturamento Anual</div>
+        <div class="kpi-label">Faturamento 2026</div>
         <div class="kpi-value" id="kpiAnual">R$0</div>
         <div class="kpi-sub" id="kpiAnualSub">— meses registrados</div>
       </div>
@@ -652,10 +647,7 @@
     <div id="managersBody"></div>
   </div>
 
-  <!-- BOTTOM BAR CHART -->
-  <div class="bottom-chart">
-    <canvas id="barChart"></canvas>
-  </div>
+
 
 </div>
 
@@ -670,14 +662,10 @@
     <h2>ATUALIZAR DASHBOARD</h2>
     <div class="modal-grid">
 
-      <div class="modal-sub">META & MÊS ATUAL</div>
+      <div class="modal-sub">MÊS ATUAL</div>
       <div class="modal-divider"></div>
 
-      <div class="field-group">
-        <label>Meta Mensal (R$)</label>
-        <input type="text" id="inputMeta" placeholder="6.880.901,53">
-      </div>
-      <div class="field-group">
+      <div class="field-group full">
         <label>Mês Atual</label>
         <select id="inputCurrentMonth" style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--white);padding:10px 12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;outline:none;">
           <option value="0">MARÇO</option>
@@ -690,12 +678,13 @@
           <option value="7">OUTUBRO</option>
           <option value="8">NOVEMBRO</option>
           <option value="9">DEZEMBRO</option>
-          <option value="10">JANEIRO</option>
-          <option value="11" selected>FEVEREIRO</option>
+          <option value="10">JANEIRO / 2026</option>
+          <option value="11" selected>FEVEREIRO / 2026</option>
         </select>
+        <div style="font-size:10px;color:var(--gray);letter-spacing:1px;margin-top:4px;font-weight:300">⚡ A meta é calculada automaticamente: média dos 3 meses anteriores</div>
       </div>
 
-      <div class="modal-sub" style="margin-top:8px">FATURAMENTO MENSAL</div>
+      <div class="modal-sub" style="margin-top:8px">FATURAMENTO 2025</div>
       <div class="modal-divider"></div>
 
       <div class="field-group"><label>Março</label><input type="text" id="m0" placeholder="5.246.639,33"></div>
@@ -708,8 +697,12 @@
       <div class="field-group"><label>Outubro</label><input type="text" id="m7" placeholder="9.085.111,88"></div>
       <div class="field-group"><label>Novembro</label><input type="text" id="m8" placeholder="7.833.265,11"></div>
       <div class="field-group"><label>Dezembro</label><input type="text" id="m9" placeholder="10.981.771,91"></div>
-      <div class="field-group"><label>Janeiro</label><input type="text" id="m10" placeholder="1.739.301,80"></div>
-      <div class="field-group"><label>Fevereiro</label><input type="text" id="m11" placeholder="5.944.839,43"></div>
+
+      <div class="modal-sub" style="margin-top:8px">FATURAMENTO 2026</div>
+      <div class="modal-divider"></div>
+
+      <div class="field-group"><label>Janeiro / 2026</label><input type="text" id="m10" placeholder="1.739.301,80"></div>
+      <div class="field-group"><label>Fevereiro / 2026</label><input type="text" id="m11" placeholder="5.944.839,43"></div>
 
       <div class="modal-sub" style="margin-top:8px">GESTORES</div>
       <div class="modal-divider"></div>
@@ -737,7 +730,6 @@ const MONTHS = ['MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUT
 const COLORS_MANAGER = ['#FF6B00','#ffffff','#888888','#444444'];
 
 let state = {
-  meta: 6880901.528,
   currentMonth: 11,
   monthly: [5246639.33, 4346796.62, 4140488.44, 4267125.57, 5768418.88, 4872654.48, 6757616.26, 9085111.88, 7833265.11, 10981771.91, 1739301.80, 5944839.43],
   managers: [
@@ -774,33 +766,70 @@ function clock() {
 }
 
 function render() {
-  const { meta, currentMonth, monthly, managers } = state;
+  const { currentMonth, monthly, managers } = state;
 
-  // META
-  document.getElementById('metaDisplay').textContent = fmt(meta);
+  // CALCULA META: média dos 3 últimos meses com valor > 0 antes do mês atual
+  const filled = monthly.map((v, i) => ({ v, i })).filter(x => x.v > 0 && x.i !== currentMonth);
+  const last3 = filled.slice(-3);
+  const meta = last3.length > 0 ? last3.reduce((a, x) => a + x.v, 0) / last3.length : 0;
+  const metaMeses = last3.map(x => MONTHS[x.i].substring(0,3)).join(', ');
 
   // TABELA
   const tbody = document.getElementById('monthlyBody');
   tbody.innerHTML = '';
-  monthly.forEach((v, i) => {
+
+  // Separador 2025 (índices 0-9: MAR a DEZ)
+  const trYear2025 = document.createElement('tr');
+  trYear2025.innerHTML = `<td colspan="2" style="padding:5px 14px 3px;font-size:9px;letter-spacing:4px;color:var(--orange);font-weight:400;background:rgba(255,107,0,0.06);border-bottom:1px solid rgba(255,107,0,0.2)">2025</td>`;
+  tbody.appendChild(trYear2025);
+
+  for (let i = 0; i <= 9; i++) {
+    const v = monthly[i];
     const tr = document.createElement('tr');
     if (i === currentMonth) tr.classList.add('current-month');
     tr.innerHTML = `<td>${MONTHS[i]}</td><td>${v > 0 ? fmt(v) : '—'}</td>`;
     tbody.appendChild(tr);
-  });
+  }
 
-  // KPI ANUAL
-  const anual = monthly.reduce((a,b) => a+b, 0);
-  const filled = monthly.filter(v => v > 0).length;
-  document.getElementById('kpiAnual').textContent = fmt(anual);
-  document.getElementById('kpiAnualSub').textContent = filled + ' meses registrados';
+  // Separador 2026 (índices 10-11: JAN e FEV)
+  const trYear2026 = document.createElement('tr');
+  trYear2026.innerHTML = `<td colspan="2" style="padding:5px 14px 3px;font-size:9px;letter-spacing:4px;color:#00c853;font-weight:400;background:rgba(0,200,83,0.06);border-bottom:1px solid rgba(0,200,83,0.2);border-top:1px solid var(--border)">2026</td>`;
+  tbody.appendChild(trYear2026);
+
+  for (let i = 10; i <= 11; i++) {
+    const v = monthly[i];
+    const tr = document.createElement('tr');
+    if (i === currentMonth) tr.classList.add('current-month');
+    tr.innerHTML = `<td>${MONTHS[i]}</td><td>${v > 0 ? fmt(v) : '—'}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  // KPI ANUAL — soma apenas JAN+FEV 2026 (índices 10 e 11)
+  const anual2026 = (monthly[10] || 0) + (monthly[11] || 0);
+  const filled2026 = [monthly[10], monthly[11]].filter(v => v > 0).length;
+  document.getElementById('kpiAnual').textContent = fmt(anual2026);
+  document.getElementById('kpiAnualSub').textContent = '2026 · ' + filled2026 + ' mês' + (filled2026 !== 1 ? 'es' : '') + ' registrado' + (filled2026 !== 1 ? 's' : '');
+
+  // HEADER META
+  document.getElementById('metaDisplay').textContent = fmt(meta);
+  document.getElementById('metaBaseInfo').textContent = 'média: ' + metaMeses;
 
   // KPI MENSAL
   const mensal = monthly[currentMonth] || 0;
   document.getElementById('kpiMensal').textContent = fmt(mensal);
   const pct = meta > 0 ? (mensal / meta * 100) : 0;
-  const bar = document.getElementById('metaBar');
   const pctCapped = Math.min(pct, 100);
+
+  // barra do header
+  const hBar = document.getElementById('headerMetaBar');
+  const hPct = document.getElementById('headerMetaPct');
+  setTimeout(() => { hBar.style.width = pctCapped + '%'; }, 100);
+  hBar.style.background = pct >= 100 ? 'var(--green)' : 'var(--orange)';
+  hPct.textContent = pct.toFixed(1) + '%';
+  hPct.style.color = pct >= 100 ? 'var(--green)' : 'var(--orange)';
+
+  // barra do card
+  const bar = document.getElementById('metaBar');
   setTimeout(() => { bar.style.width = pctCapped + '%'; }, 100);
   if (pct >= 100) { bar.classList.add('over'); } else { bar.classList.remove('over'); }
   document.getElementById('metaSub').textContent = pct.toFixed(1) + '% da meta atingida';
@@ -839,7 +868,10 @@ function render() {
   }, 200);
 
   // CHARTS
-  const labels = MONTHS.map((m, i) => monthly[i] > 0 ? m.substring(0,3) : m.substring(0,3));
+  const labels = MONTHS.map((m, i) => {
+    const short = m.substring(0,3);
+    return i >= 10 ? short + '/26' : short + '/25';
+  });
   const data = monthly.map(v => v > 0 ? v : null);
   const bgColors = monthly.map((v, i) => i === currentMonth ? '#FF6B00' : 'rgba(255,255,255,0.08)');
   const borderColors = monthly.map((v, i) => i === currentMonth ? '#FF6B00' : 'rgba(255,255,255,0.2)');
@@ -862,54 +894,31 @@ function render() {
     }
   };
 
-  // LINE CHART
+  // LINE CHART → now slim bar chart
   if (lineChart) lineChart.destroy();
   const lCtx = document.getElementById('lineChart').getContext('2d');
-  const gradient = lCtx.createLinearGradient(0, 0, 0, 200);
-  gradient.addColorStop(0, 'rgba(255,107,0,0.3)');
-  gradient.addColorStop(1, 'rgba(255,107,0,0)');
   lineChart = new Chart(lCtx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        borderColor: '#FF6B00',
-        backgroundColor: gradient,
-        borderWidth: 2,
-        pointRadius: (ctx) => ctx.dataIndex === currentMonth ? 6 : 3,
-        pointBackgroundColor: (ctx) => ctx.dataIndex === currentMonth ? '#FF6B00' : '#333',
-        pointBorderColor: '#FF6B00',
-        tension: 0.4,
-        fill: true,
-        spanGaps: false
-      }]
-    },
-    options: { ...chartDefaults, responsive: true, maintainAspectRatio: true }
-  });
-
-  // BAR CHART
-  if (barChart) barChart.destroy();
-  const bCtx = document.getElementById('barChart').getContext('2d');
-  barChart = new Chart(bCtx, {
     type: 'bar',
     data: {
       labels,
       datasets: [{
         data,
-        backgroundColor: bgColors,
-        borderColor: borderColors,
+        backgroundColor: monthly.map((v, i) => i === currentMonth ? '#FF6B00' : i >= 10 ? 'rgba(0,200,83,0.5)' : 'rgba(255,255,255,0.12)'),
+        borderColor: monthly.map((v, i) => i === currentMonth ? '#FF6B00' : i >= 10 ? '#00c853' : 'rgba(255,255,255,0.25)'),
         borderWidth: 1,
-        borderRadius: 2,
+        borderRadius: 3,
+        barPercentage: 0.35,
+        categoryPercentage: 0.7,
       }]
     },
-    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: true }
   });
+
+  if (barChart) barChart.destroy();
 }
 
 function openModal() {
-  const { meta, currentMonth, monthly, managers } = state;
-  document.getElementById('inputMeta').value = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const { currentMonth, monthly, managers } = state;
   document.getElementById('inputCurrentMonth').value = currentMonth;
   monthly.forEach((v, i) => {
     const el = document.getElementById('m' + i);
@@ -927,7 +936,6 @@ function closeModal() {
 }
 
 function applyData() {
-  state.meta = parseInput(document.getElementById('inputMeta').value) || state.meta;
   state.currentMonth = parseInt(document.getElementById('inputCurrentMonth').value);
   for (let i = 0; i < 12; i++) {
     const v = document.getElementById('m' + i).value;
