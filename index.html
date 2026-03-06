@@ -150,7 +150,7 @@
 
   .section-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     letter-spacing: 4px;
     color: var(--gray);
     padding: 10px 14px 8px;
@@ -173,7 +173,7 @@
   }
 
   thead th {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 3px;
     color: var(--gray);
     text-align: left;
@@ -200,7 +200,7 @@
 
   tbody td {
     padding: 7px 14px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--gray-light);
   }
@@ -208,7 +208,7 @@
   tbody td:first-child {
     font-weight: 300;
     color: var(--gray);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 2px;
     text-transform: uppercase;
   }
@@ -225,8 +225,8 @@
   }
 
   .kpi-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
   }
 
@@ -253,7 +253,7 @@
   }
 
   .kpi-label {
-    font-size: 10px;
+    font-size: 13px;
     letter-spacing: 4px;
     color: var(--gray);
     text-transform: uppercase;
@@ -263,7 +263,7 @@
 
   .kpi-value {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 42px;
+    font-size: 56px;
     letter-spacing: 1px;
     line-height: 1;
     color: var(--white);
@@ -274,7 +274,7 @@
   }
 
   .kpi-sub {
-    font-size: 11px;
+    font-size: 13px;
     color: var(--gray);
     margin-top: 6px;
     letter-spacing: 1px;
@@ -282,9 +282,9 @@
   }
 
   .progress-wrap {
-    margin-top: 10px;
+    margin-top: 12px;
     background: var(--border);
-    height: 3px;
+    height: 4px;
     border-radius: 2px;
     overflow: hidden;
   }
@@ -309,7 +309,7 @@
 
   .meta-pct {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
+    font-size: 28px;
     color: var(--orange);
   }
 
@@ -348,7 +348,7 @@
   .manager-item {
     display: flex;
     align-items: center;
-    padding: 12px 16px;
+    padding: 13px 16px;
     border-bottom: 1px solid var(--border);
     gap: 12px;
     position: relative;
@@ -358,12 +358,11 @@
   }
 
   .manager-item:hover { background: #222; }
-
   .manager-item:last-child { border-bottom: none; }
 
   .manager-rank {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
+    font-size: 24px;
     color: var(--border);
     width: 24px;
     flex-shrink: 0;
@@ -373,7 +372,7 @@
 
   .manager-name {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
+    font-size: 24px;
     letter-spacing: 2px;
     line-height: 1;
     margin-bottom: 3px;
@@ -384,7 +383,7 @@
     height: 2px;
     border-radius: 2px;
     overflow: hidden;
-    margin-top: 4px;
+    margin-top: 5px;
   }
 
   .manager-bar {
@@ -395,7 +394,7 @@
 
   .manager-value {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px;
+    font-size: 19px;
     color: var(--white);
     text-align: right;
     white-space: nowrap;
@@ -403,7 +402,7 @@
   }
 
   .manager-pct {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--gray);
     text-align: right;
     letter-spacing: 1px;
@@ -615,12 +614,12 @@
   <!-- CENTRO -->
   <div class="center-panel">
     <div class="kpi-row">
-      <div class="kpi-card highlight">
+      <div class="kpi-card highlight" style="text-align:center">
         <div class="kpi-label">Faturamento 2026</div>
         <div class="kpi-value" id="kpiAnual">R$0</div>
         <div class="kpi-sub" id="kpiAnualSub">— meses registrados</div>
       </div>
-      <div class="kpi-card">
+      <div class="kpi-card" style="text-align:center">
         <div class="kpi-label">Faturamento Mensal</div>
         <div class="kpi-value" id="kpiMensal">R$0</div>
         <div class="progress-wrap">
@@ -635,7 +634,7 @@
     <div class="chart-card">
       <div class="chart-header">
         <div class="section-title" style="padding:0;border:none">Evolução Mensal</div>
-        <div style="font-size:10px;letter-spacing:3px;color:var(--gray);font-weight:300">FATURAMENTO R$</div>
+        <div style="font-size:11px;letter-spacing:3px;color:var(--gray);font-weight:300">FATURAMENTO R$</div>
       </div>
       <canvas id="lineChart" height="120"></canvas>
     </div>
@@ -805,10 +804,10 @@ function clock() {
 function render() {
   const { currentMonth, monthly, managers } = state;
 
-  // CALCULA META: média dos 3 últimos meses com valor > 0 antes do mês atual
+  // CALCULA META: soma dos 3 últimos meses / 3 * 25%
   const filled = monthly.map((v, i) => ({ v, i })).filter(x => x.v > 0 && x.i !== currentMonth);
   const last3 = filled.slice(-3);
-  const meta = last3.length > 0 ? last3.reduce((a, x) => a + x.v, 0) / last3.length : 0;
+  const meta = last3.length > 0 ? (last3.reduce((a, x) => a + x.v, 0) / last3.length) * 1.25 : 0;
   const metaMeses = last3.map(x => MONTHS[x.i].substring(0,3)).join(', ');
 
   // TABELA
@@ -858,7 +857,7 @@ function render() {
 
   // HEADER META
   document.getElementById('metaDisplay').textContent = fmt(meta);
-  document.getElementById('metaBaseInfo').textContent = 'média: ' + metaMeses;
+  document.getElementById('metaBaseInfo').textContent = 'média (' + metaMeses + ') × 1,25';
 
   // KPI MENSAL
   const mensal = monthly[currentMonth] || 0;
